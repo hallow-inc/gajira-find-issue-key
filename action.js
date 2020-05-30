@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const _ = require('lodash')
 const core = require('@actions/core')
 const github = require('@actions/github')
