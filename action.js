@@ -491,6 +491,10 @@ module.exports = class {
   }
 
   async findIssueKeyIn(searchStr) {
+    if (!searchStr) {
+      core.setFailed('searchStr is undefined')
+      return
+    }
     const match = searchStr.match(issueIdRegEx)
 
     if (!match) {
