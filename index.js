@@ -70,7 +70,6 @@ function parseArgs() {
   const fromList = ['commits', 'pull_request', 'branch']
 
   return {
-    event: core.getInput('event') || config.event,
     string: core.getInput('string') || config.string,
     from: fromList.includes(core.getInput('from')) ? core.getInput('from') : 'commits',
     githubToken: core.getInput('github-token'),

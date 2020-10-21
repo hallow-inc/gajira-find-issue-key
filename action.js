@@ -469,6 +469,9 @@ module.exports = class {
   }
 
   async execute() {
+    if (this.argv.string) {
+      return this.findIssueKeyIn(this.argv.string)
+    }
     const issues = await this.getJiraKeysFromGitRange()
 
     if (issues) {
@@ -478,21 +481,20 @@ module.exports = class {
 
       return issues
     }
-
-    const template = eventTemplates[this.argv.from] || this.argv._.join(' ')
-    const extractString = this.preprocessString(template)
-
-    if (!extractString) {
-      core.warning(`This github event is not compatible with this usage.`)
-
-      return
+    if (this.argv.from) {
+      const template = eventTemplates[this.argv.from]
+      if (template) {
+        const searchStr = this.preprocessString(template)
+        return this.findIssueKeyIn(searchStr)
+      }
     }
-    const match = extractString.match(issueIdRegEx)
+  }
+
+  async findIssueKeyIn(searchStr) {
+    const match = searchStr.match(issueIdRegEx)
 
     if (!match) {
-      core.warning(`String "${extractString}" does not contain issueKeys`)
-
-      return
+      core.info(`String "${searchStr}" does not contain issueKeys`)
     }
 
     for (const issueKey of match) {
