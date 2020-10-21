@@ -470,7 +470,9 @@ module.exports = class {
 
   async execute() {
     if (this.argv.string) {
-      return this.findIssueKeyIn(this.argv.string)
+      const foundIssue = await this.findIssueKeyIn(this.argv.string)
+
+      if (foundIssue) return foundIssue
     }
     const issues = await this.getJiraKeysFromGitRange()
 
