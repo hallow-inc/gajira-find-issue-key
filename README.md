@@ -16,7 +16,7 @@ To find an issue key inside commit messages:
 - name: Find in commit messages
   uses: atlassian/gajira-find-issue-key@master
   with:
-    from: commits
+    string: ${{ github.event.ref }}
 ```
 
 To find an issue key inside github event (branch):
@@ -25,7 +25,16 @@ To find an issue key inside github event (branch):
 - name: Find in commit messages
   uses: atlassian/gajira-find-issue-key@master
   with:
-    string: ${{ github.event.ref }}
+    from: branch
+```
+
+To find an issue key inside commit messages:
+
+```yaml
+- name: Find in commit messages
+  uses: atlassian/gajira-find-issue-key@master
+  with:
+    from: commits
 ```
 
 ----
@@ -37,10 +46,13 @@ To find an issue key inside github event (branch):
 - None
 
 ### Inputs
+<<<<<<< HEAD
 
 - `description` - Provide jsonpath for the GitHub event to extract issue from
+=======
+>>>>>>> 570a720 (update readme)
 - `string` - Provide a string to extract issue key from
-- `from` - Find from predefined place (should be either 'branch', or 'commits', default is 'commits')
+- `from` - Find from predefined place (should be either 'branch', or 'commits')
 
 ### Outputs
 
