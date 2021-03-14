@@ -1,21 +1,22 @@
 const github = require('@actions/github')
+
 export const { context } = github
 export async function getPreviousReleaseRef(octo) {
-    if (!context.repository || !octo) {
-      return
-    }
-    const releases = await octo.repos.getLatestRelease({
-      ...context.repo,
-    })
-  
-    const { tag_name } = releases.payload
-  
-    return tag_name
+  if (!context.repository || !octo) {
+    return
   }
-  
+  const releases = await octo.repos.getLatestRelease({
+    ...context.repo,
+  })
+
+  const { tag_name } = releases.payload
+
+  return tag_name
+}
+
 export function upperCaseFirst(str) {
-    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1))
-  }
+  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1))
+}
 
 export const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
 

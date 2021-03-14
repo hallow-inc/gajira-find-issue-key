@@ -4,7 +4,15 @@ const github = require('@actions/github')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
-const { getPreviousReleaseRef, upperCaseFirst, context, issueIdRegEx, startJiraToken,endJiraToken,eventTemplates} = require('./utils')
+const {
+  getPreviousReleaseRef,
+  upperCaseFirst,
+  context,
+  issueIdRegEx,
+  startJiraToken,
+  endJiraToken,
+  eventTemplates,
+} = require('./utils')
 
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
@@ -69,11 +77,9 @@ module.exports = class {
     if (argv.githubToken) {
       this.github = new github.GitHub(argv.githubToken) || null
     }
-    if (config.gist_name)
-      this.createGist = true
+    if (config.gist_name) this.createGist = true
 
-    if (config.base_ref && config.head_ref)
-      this.foundKeys = new Array()
+    if (config.base_ref && config.head_ref) this.foundKeys = new Array()
   }
 
   // if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true')
@@ -450,86 +456,56 @@ module.exports = class {
 
   async execute() {
     if (this.argv.string) {
+      s
       const foundIssue = await this.findIssueKeyIn(this.argv.string)
+      return foundIssue
+    }
 
-      const issues = await this.getJiraKeysFromGitRange()
+    await this.getJiraKeysFromGitRange()
 
-      if (issues) {
-        await this.transitionIssues()
-        await this.updatePullRequestBody(startJiraToken, endJiraToken)
-        await this.outputReleaseNotes()
-
-        return issues
-      }
-      if (this.argv.from) {
-        const template = eventTemplates[this.argv.from]
-        if (template) {
-          const searchStr = this.preprocessString(template)
-          return this.findIssueKeyIn(searchStr)
-        }
-      }
-      // Make the array Unique
-      const uniqueKeys = [...new Set(fullArray)]
-
-      // Verify that the strings that look like key match real Jira keys
-      for (const issueKey of uniqueKeys) {
-        const issue = await this.Jira.getIssue(issueKey)
-        if (issue)
-          this.foundKeys.push(issue)
-      }
+    if (this.foundKeys.length > 0) {
+      await this.transitionIssues()
+      await this.updatePullRequestBody(startJiraToken, endJiraToken)
+      await this.outputReleaseNotes()
 
       return this.foundKeys
     }
 
-<<<<<<< HEAD
-    async findIssueKeyIn(searchStr) {
-      if (!searchStr) {
-        core.setFailed('searchStr is undefined')
-        return
-      }
-      const match = searchStr.match(issueIdRegEx)
-
-=======
-  async execute() {
-
-    const issues = await getJiraKeysFromGit()
-
-    if (issues)
-      return issues
-
     const template = eventTemplates[this.argv.from] || this.argv._.join(' ')
-    const extractString = this.preprocessString(template)
-    const match = extractString.match(issueIdRegEx)
+    const searchStr = this.preprocessString(template)
+    return this.findIssueKeyIn(searchStr)
+  }
 
->>>>>>> e3b388a (Merge Progress)
-      if (!match) {
-        core.info(`String "${searchStr}" does not contain issueKeys`)
-      }
+  async findIssueKeyIn(searchStr) {
+    if (!searchStr) {
+      core.info(`no issues found in ${this.argv.from}`)
+      return
+    }
+    const match = searchStr.match(issueIdRegEx)
 
-      for (const issueKey of match) {
-        const issue = await this.Jira.getIssue(issueKey)
-
-        if (issue) {
-          core.debug(`Jira issue: ${JSON.stringify(issue)}`)
-
-          return new Map(['key', issue.key])
-        }
-      }
+    if (!match) {
+      core.info(`String "${searchStr}" does not contain issueKeys`)
     }
 
-    preprocessString(str) {
-<<<<<<< HEAD
-      try {
-        _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
-        const tmpl = _.template(str)
-=======
-    _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
-    const tmpl = _.template(str)
->>>>>>> e3b388a (Merge Progress)
+    for (const issueKey of match) {
+      const issue = await this.Jira.getIssue(issueKey)
 
-        return tmpl({ event: this.githubEvent })
-      } catch (error) {
-        core.error(error)
+      if (issue) {
+        core.debug(`Jira issue: ${JSON.stringify(issue)}`)
+
+        return new Map(['key', issue.key])
       }
     }
   }
+
+  preprocessString(str) {
+    try {
+      _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
+      const tmpl = _.template(str)
+
+      return tmpl({ event: this.githubEvent })
+    } catch (error) {
+      core.error(error)
+    }
+  }
+}

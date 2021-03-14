@@ -46,11 +46,8 @@ To find an issue key inside commit messages:
 - None
 
 ### Inputs
-<<<<<<< HEAD
 
 - `description` - Provide jsonpath for the GitHub event to extract issue from
-=======
->>>>>>> 570a720 (update readme)
 - `string` - Provide a string to extract issue key from
 - `from` - Find from predefined place (should be either 'branch', or 'commits')
 
