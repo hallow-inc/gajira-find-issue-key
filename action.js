@@ -32,7 +32,7 @@ module.exports = class {
     this.createIssue = argv.createIssue
     this.updatePRTitle = argv.updatePRTitle
     this.commitMessageList = null
-    this.foundKeys = null
+    this.foundKeys = []
     this.githubIssues = []
     this.jiraTransition = null
     this.createGist = false
@@ -78,8 +78,6 @@ module.exports = class {
       this.github = new github.GitHub(argv.githubToken) || null
     }
     if (config.gist_name) this.createGist = true
-
-    if (config.base_ref && config.head_ref) this.foundKeys = new Array()
   }
 
   // if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true')
@@ -335,7 +333,6 @@ module.exports = class {
 
     core.debug(`Unique Keys: ${uniqueKeys}\n`)
     // Verify that the strings that look like key match real Jira keys
-    this.foundKeys = []
     for (const issueKey of uniqueKeys) {
       // Version 3 includes Sprint information, but description is in Atlassian Document Format
       // Which is used only by atlassian, and we need a converter to Markdown.
@@ -456,7 +453,6 @@ module.exports = class {
 
   async execute() {
     if (this.argv.string) {
-      s
       const foundIssue = await this.findIssueKeyIn(this.argv.string)
       return foundIssue
     }

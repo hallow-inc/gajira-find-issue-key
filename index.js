@@ -60,9 +60,8 @@ async function exec() {
     }
 
     core.debug('No issueKeys found.')
-    core.setNeutral()
   } catch (error) {
-    core.setFailed(error.toString())
+    core.setFailed(error)
   }
 }
 
