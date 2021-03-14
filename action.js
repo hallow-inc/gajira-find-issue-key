@@ -4,35 +4,7 @@ const github = require('@actions/github')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
-
-const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
-
-const startJiraToken = 'JIRA-ISSUE-TEXT-START'
-const endJiraToken = 'JIRA-ISSUE-TEXT-END'
-
-const eventTemplates = {
-  branch: '{{event.ref}}',
-  commits: "{{event.commits.map(c=>c.message).join(' ')}}",
-}
-
-const { context } = github
-
-async function getPreviousReleaseRef(octo) {
-  if (!context.repository || !octo) {
-    return
-  }
-  const releases = await octo.repos.getLatestRelease({
-    ...context.repo,
-  })
-
-  const { tag_name } = releases.payload
-
-  return tag_name
-}
-
-function upperCaseFirst(str) {
-  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1))
-}
+const { getPreviousReleaseRef, upperCaseFirst, context, issueIdRegEx, startJiraToken,endJiraToken,eventTemplates} = require('./utils')
 
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
@@ -55,6 +27,8 @@ module.exports = class {
     this.foundKeys = null
     this.githubIssues = []
     this.jiraTransition = null
+    this.createGist = false
+    this.gist_private = config.gist_private
     this.transitionChain = []
     if (argv.transitionChain) {
       this.transitionChain = argv.transitionChain.split(',')
@@ -74,8 +48,6 @@ module.exports = class {
       this.jiraTransition = argv.transitionOnNewBranch
     }
 
-    this.github = new github.GitHub(argv.githubToken) || null
-
     if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
       this.headRef = githubEvent.pull_request.head.ref || null
       this.baseRef = githubEvent.pull_request.base.ref || null
@@ -94,6 +66,14 @@ module.exports = class {
     }
     this.headRef = argv.headRef || this.headRef || null
     this.baseRef = argv.baseRef || this.baseRef || null
+    if (argv.githubToken) {
+      this.github = new github.GitHub(argv.githubToken) || null
+    }
+    if (config.gist_name)
+      this.createGist = true
+
+    if (config.base_ref && config.head_ref)
+      this.foundKeys = new Array()
   }
 
   // if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true')
@@ -472,56 +452,84 @@ module.exports = class {
     if (this.argv.string) {
       const foundIssue = await this.findIssueKeyIn(this.argv.string)
 
-      if (foundIssue) return foundIssue
+      const issues = await this.getJiraKeysFromGitRange()
+
+      if (issues) {
+        await this.transitionIssues()
+        await this.updatePullRequestBody(startJiraToken, endJiraToken)
+        await this.outputReleaseNotes()
+
+        return issues
+      }
+      if (this.argv.from) {
+        const template = eventTemplates[this.argv.from]
+        if (template) {
+          const searchStr = this.preprocessString(template)
+          return this.findIssueKeyIn(searchStr)
+        }
+      }
+      // Make the array Unique
+      const uniqueKeys = [...new Set(fullArray)]
+
+      // Verify that the strings that look like key match real Jira keys
+      for (const issueKey of uniqueKeys) {
+        const issue = await this.Jira.getIssue(issueKey)
+        if (issue)
+          this.foundKeys.push(issue)
+      }
+
+      return this.foundKeys
     }
-    const issues = await this.getJiraKeysFromGitRange()
 
-    if (issues) {
-      await this.transitionIssues()
-      await this.updatePullRequestBody(startJiraToken, endJiraToken)
-      await this.outputReleaseNotes()
+<<<<<<< HEAD
+    async findIssueKeyIn(searchStr) {
+      if (!searchStr) {
+        core.setFailed('searchStr is undefined')
+        return
+      }
+      const match = searchStr.match(issueIdRegEx)
 
+=======
+  async execute() {
+
+    const issues = await getJiraKeysFromGit()
+
+    if (issues)
       return issues
+
+    const template = eventTemplates[this.argv.from] || this.argv._.join(' ')
+    const extractString = this.preprocessString(template)
+    const match = extractString.match(issueIdRegEx)
+
+>>>>>>> e3b388a (Merge Progress)
+      if (!match) {
+        core.info(`String "${searchStr}" does not contain issueKeys`)
+      }
+
+      for (const issueKey of match) {
+        const issue = await this.Jira.getIssue(issueKey)
+
+        if (issue) {
+          core.debug(`Jira issue: ${JSON.stringify(issue)}`)
+
+          return new Map(['key', issue.key])
+        }
+      }
     }
-    if (this.argv.from) {
-      const template = eventTemplates[this.argv.from]
-      if (template) {
-        const searchStr = this.preprocessString(template)
-        return this.findIssueKeyIn(searchStr)
+
+    preprocessString(str) {
+<<<<<<< HEAD
+      try {
+        _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
+        const tmpl = _.template(str)
+=======
+    _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
+    const tmpl = _.template(str)
+>>>>>>> e3b388a (Merge Progress)
+
+        return tmpl({ event: this.githubEvent })
+      } catch (error) {
+        core.error(error)
       }
     }
   }
-
-  async findIssueKeyIn(searchStr) {
-    if (!searchStr) {
-      core.setFailed('searchStr is undefined')
-      return
-    }
-    const match = searchStr.match(issueIdRegEx)
-
-    if (!match) {
-      core.info(`String "${searchStr}" does not contain issueKeys`)
-    }
-
-    for (const issueKey of match) {
-      const issue = await this.Jira.getIssue(issueKey)
-
-      if (issue) {
-        core.debug(`Jira issue: ${JSON.stringify(issue)}`)
-
-        return new Map(['key', issue.key])
-      }
-    }
-  }
-
-  preprocessString(str) {
-    try {
-      _.templateSettings.interpolate = /{{([\s\S]+?)}}/g
-      const tmpl = _.template(str)
-
-      return tmpl({ event: this.githubEvent })
-    } catch (error) {
-      core.error(error)
-    }
-  }
-}

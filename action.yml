@@ -96,6 +96,23 @@ inputs:
     description: GitHub Token used for authentication
     required: false
 
+  create-gist-output-named:
+    description: >
+      Generate a GitHub Gist using YAML with the name provided here, 
+      that includes each issue key, url, and title as a list of maps.
+    required: false
+  gist-private:
+    default: 'true'
+    description: Is the generated Gist private, defaults to true
+    required: false
+  head-ref:
+    description: The Git Head Ref to which commit messages will be collected up to
+    required: false
+  base-ref:
+    description: The Git Base Ref to which commit messages will be collected up from
+    required: false
+
+  
 outputs:
   issue:
     description: Key of the found issue

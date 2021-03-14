@@ -13,6 +13,7 @@ const githubEvent = process.env.GITHUB_EVENT_PATH ? require(process.env.GITHUB_E
 const config = YAML.parse(fs.readFileSync(configPath, 'utf8'))
 
 async function writeKey(result) {
+<<<<<<< HEAD
   if (!result) {
     return
   }
@@ -24,6 +25,18 @@ async function writeKey(result) {
 
   const yamledResult = YAML.stringify(result)
   const extendedConfig = { ...config, ...result }
+=======
+  console.log(`Detected issueKey: ${result.issue}`)
+  console.log(`Saving ${result.issue} to ${cliConfigPath}`)
+  console.log(`Saving ${result.issue} to ${configPath}`)
+
+  // Expose created issue's key as an output
+
+
+  const yamledResult = YAML.stringify(result)
+  const extendedConfig = Object.assign({}, config, result)
+
+>>>>>>> e3b388a (Merge Progress)
 
   fs.writeFileSync(configPath, YAML.stringify(extendedConfig))
 
@@ -85,6 +98,8 @@ function parseArgs() {
     transitionOnPrOpen: core.getInput('jira-transition-on-pr-open'),
     transitionOnPrApproval: core.getInput('jira-transition-on-pr-approval'),
     transitionOnPrMerge: core.getInput('jira-transition-on-pr-merge'),
+    gist_private: core.getInput('gist-private') === 'true',
+    gist_name: core.getInput('create-gist-output-named'),
   }
 }
 
