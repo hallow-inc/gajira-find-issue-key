@@ -350,6 +350,7 @@ module.exports = class {
 
       if (issue) {
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
+        issueObject.set('key', issue.key)
         try {
           issueObject.set('key', issue.key)
           if (Array.isArray(issue.fields.customfield_10500)) {
