@@ -98,20 +98,55 @@ inputs:
 
   create-gist-output-named:
     description: >
-      Generate a GitHub Gist using YAML with the name provided here, 
-      that includes each issue key, url, and title as a list of maps.
-    required: false
-  gist-private:
-    default: 'true'
-    description: Is the generated Gist private, defaults to true
+      Options can be: 'first', or 'all'
+      
+      This variable controls both how many results are returned, 
+      and how many results are processed.
+
+      If the 'from' variable is 'pull_request', and this 'returns' variable is 'all',
+      then base-ref defaults to the pull_request.base.ref, 
+      and the head-ref defaults to pull_request.head.ref from the github event.
+
+      NOTE: This action originally returned only the first Jira Ticket ID found.
+      For backwards compatibility the default is set to 'first'.
     required: false
   head-ref:
-    description: The Git Head Ref to which commit messages will be collected up to
+    description: >
+      The Git Head Ref to which commit messages will be collected up to.
+      If the base-ref is included, and the github event is a pull_request or push,
+      The head-ref from the event will be used.
     required: false
   base-ref:
-    description: The Git Base Ref to which commit messages will be collected up from
+    description: >
+      The Git Base Ref to which commit messages will be collected up from.
+      If the base-ref is not included, 
     required: false
+  include-merge-messages:
+    description: >
+      When parsing commit messages, include merge and pull messages.
+      This is disabled by default, to exclude tickets that may be included
+      or fixed in other branches or pull requests.
+    required: false
+  generate-github-milestones:
+    description: >
+      Create GitHub Milestones from the Jira Issue' sprints
+    default: 'false'
+    required: false
+  generate-github-issues:
+    description: >
+      When a Jira Issue is found, the existing list of GitHub issues is iterated through,
+      and if a GitHub issue starts with the Jira Issue Key, then the Github Issue is
+      updated with details from the Jira issue.
+      If the Github issue doesn't exist, the GitHub issue is created.
 
+      If 'generate-github-milestones' is 'true', then the GitHub issue is linked to the milestone.
+      
+      If this action is triggered through a pull_request event, then when the pull_request
+      is closed, and merged, the GitHub issues are also closed, by adding 'Resolves #<IssueNumber>' 
+      syntax on the pull_request body
+
+    default: 'false'
+    required: false
   
 outputs:
   issue:
