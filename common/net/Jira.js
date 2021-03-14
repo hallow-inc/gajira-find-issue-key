@@ -81,9 +81,9 @@ class Jira {
       headers['Content-Type'] = 'application/json'
     }
 
-    if (headers.Accept === undefined) {
-      headers.Accept = 'application/json'
-    }
+    // if (headers.Accept === undefined) {
+    //   headers.Accept = 'application/json'
+    // }
 
     if (headers.Authorization === undefined) {
       headers.Authorization = `Basic ${Buffer.from(`${this.email}:${this.token}`).toString(
