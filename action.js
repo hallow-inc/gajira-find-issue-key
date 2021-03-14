@@ -389,7 +389,7 @@ module.exports = class {
           if (issueV2.fields.sprint) {
             issueObject.set('sprint', issueV2.fields.sprint.name)
             issueObject.set('duedate', issueV2.fields.sprint.endDate)
-            core.debug(`Jira ${issue.key} sprint: \n${YAML.stringify(issueV2.fields.sprint)}`)
+            core.debug(`JiraV2 ${issue.key} sprint: \n${YAML.stringify(issueV2.fields.sprint)}`)
           }
 
           // issue.fields.comment.comments[]
