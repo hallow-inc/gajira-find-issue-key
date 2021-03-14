@@ -323,6 +323,7 @@ module.exports = class {
 
           if (skipCommit === false) {
             for (const issueKey of match) {
+              core.debug(`Jira key regex found ${issueKey} in: ${item.commit.message}`)
               fullArray.push(issueKey)
             }
           }
