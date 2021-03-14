@@ -350,6 +350,12 @@ module.exports = class {
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
         issueObject.set('key', issue.key)
         try {
+          if (Array.isArray(issue.fields.customfield_10500)) {
+            // Pull Request
+            core.debug(
+              `Jira ${issue.key} linked pull request: ${issue.fields.customfield_10500[0]}`,
+            )
+          }
           issueObject.set('projectName', issue.fields.project.name)
           core.debug(`Jira ${issue.key} project name: ${issue.fields.project.name}`)
           issueObject.set('projectKey', issue.fields.project.key)
