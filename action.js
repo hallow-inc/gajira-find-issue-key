@@ -14,8 +14,6 @@ const {
   eventTemplates,
 } = require('./utils')
 
-const { context } = github
-
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
     this.Jira = new Jira({
@@ -313,7 +311,10 @@ module.exports = class {
         if (match) {
           let skipCommit = false
 
-          if ((item.commit.message.startsWith('Merge branch') || item.commit.message.startsWith('Merge pull'))) {
+          if (
+            item.commit.message.startsWith('Merge branch') ||
+            item.commit.message.startsWith('Merge pull')
+          ) {
             core.debug('Commit message indicates that it is a merge')
             if (!this.argv.includeMergeMessages) {
               skipCommit = true
