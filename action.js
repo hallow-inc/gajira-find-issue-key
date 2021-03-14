@@ -319,13 +319,10 @@ module.exports = class {
             if (!this.argv.includeMergeMessages) {
               skipCommit = true
             }
-          } else {
-            core.debug('Commit message indicates that it is not a merge')
           }
 
           if (skipCommit === false) {
             for (const issueKey of match) {
-              core.debug(`Jira key regex found ${issueKey} in: ${item.commit.message}`)
               fullArray.push(issueKey)
             }
           }
