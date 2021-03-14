@@ -333,6 +333,7 @@ module.exports = class {
 
     core.debug(`Unique Keys: ${uniqueKeys}\n`)
     // Verify that the strings that look like key match real Jira keys
+    this.foundKeys = new Array()
     for (const issueKey of uniqueKeys) {
       // Version 3 includes Sprint information, but description is in Atlassian Document Format
       // Which is used only by atlassian, and we need a converter to Markdown.
