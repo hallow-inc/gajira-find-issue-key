@@ -91,6 +91,7 @@ module.exports = class {
       state: 'all',
     })
 
+    core.debug(`Milestones: ${JSON.stringify(milestones)}`)
     for (const element of milestones.data) {
       if (element.title === issueMilestone.toString()) {
         core.debug(`Existing milestone found: ${element.title}`)
@@ -194,7 +195,7 @@ module.exports = class {
     }
   }
 
-  async createOrUpdateGHIssue(issueKey, issueTitle, issueBody, milestoneNumber) {
+  async createOrUpdateGHIssue(issueKey, issueTitle, issueBody, issueAssignee, milestoneNumber) {
     core.debug(`Getting list of issues`)
     const issues = await this.github.issues.listForRepo({
       ...context.repo,
@@ -204,8 +205,8 @@ module.exports = class {
 
     core.debug(`Checking for ${issueKey} in list of issues`)
     for (const i of issues.data) {
-      if (!i.pull_request && i.title && i.title.includes(issueKey)) {
-        issueNumber = i.number
+      if (!i.pull_request && i.title.contains(issueKey)) {
+        issueNumber = i.issue_number
         break
       }
     }
