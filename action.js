@@ -14,6 +14,8 @@ const {
   eventTemplates,
 } = require('./utils')
 
+const { context } = github
+
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
     this.Jira = new Jira({
@@ -91,7 +93,6 @@ module.exports = class {
       state: 'all',
     })
 
-    core.debug(`Milestones: ${JSON.stringify(milestones)}`)
     for (const element of milestones.data) {
       if (element.title === issueMilestone.toString()) {
         core.debug(`Existing milestone found: ${element.title}`)
@@ -312,13 +313,13 @@ module.exports = class {
         if (match) {
           let skipCommit = false
 
-          if (
-            item.commit.message.startsWith('Merge branch') ||
-            item.commit.message.startsWith('Merge pull')
-          ) {
+          if ((item.commit.message.startsWith('Merge branch') || item.commit.message.startsWith('Merge pull'))) {
+            core.debug('Commit message indicates that it is a merge')
             if (!this.argv.includeMergeMessages) {
               skipCommit = true
             }
+          } else {
+            core.debug('Commit message indicates that it is not a merge')
           }
 
           if (skipCommit === false) {
@@ -348,8 +349,8 @@ module.exports = class {
 
       if (issue) {
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
-        issueObject.set('key', issue.key)
         try {
+          issueObject.set('key', issue.key)
           if (Array.isArray(issue.fields.customfield_10500)) {
             // Pull Request
             core.debug(
