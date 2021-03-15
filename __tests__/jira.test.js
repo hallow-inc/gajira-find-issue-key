@@ -6,8 +6,9 @@ const TOKEN = process.env.JIRA_TOKEN
 const EMAIL = process.env.JIRA_EMAIL
 
 describe('jira Tests', () => {
-  it('adds 1 + 2 to equal 3', () => {
+  it('jira Base Url uses HTTPS', () => {
     expect.hasAssertions()
-    expect(BASE_URL).toStartWith('https')
+    expect(BASE_URL).toBeTruthy()
+    expect(BASE_URL.substr(0, 5)).toStrictEqual('https')
   })
 })
