@@ -14,6 +14,21 @@ const {
   eventTemplates,
 } = require('./utils')
 
+async function getPreviousReleaseRef (octo) {
+  if (!context.repository || !octo) {
+    return
+  }
+  const releases = await octo.repos.getLatestRelease({
+    ...context.repo,
+  })
+
+  // eslint-disable-next-line camelcase
+  const { tag_name } = releases.payload
+
+  // eslint-disable-next-line camelcase
+  return tag_name
+}
+
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
     this.Jira = new Jira({
@@ -55,6 +70,8 @@ module.exports = class {
     } else if (context.eventName in ['create']) {
       this.jiraTransition = argv.transitionOnNewBranch
     }
+
+    this.github = new github.GitHub(argv.githubToken) || null
 
     if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
       this.headRef = githubEvent.pull_request.head.ref || null
