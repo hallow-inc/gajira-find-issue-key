@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=testing jest",
-    "build": "ncc build index.js --minify",
-    "watch": "ncc build index.js --watch --minify",
-    "lint": "prettier --write *.{yml,json,md} && eslint --fix ."
+    "build": "ncc build src/index.js -o dist --source-map --license licenses.txt",
+    "lint": "prettier --write *.{yml,json,md} && eslint --fix src/ __tests__/"
   },
   "author": "",
   "license": "ISC",
@@ -57,7 +56,7 @@
   },
   "lint-staged": {
     "*.{yml,json}": "prettier --write",
-    "*.js": "eslint --cache --fix"
+    "{src,__tests__}/**/*.js": "eslint --cache --fix"
   },
   "husky": {
     "hooks": {

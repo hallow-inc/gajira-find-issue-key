@@ -21,9 +21,9 @@ async function writeKey(result) {
   core.debug(`Saving ${result.get('key')} to ${configPath}`)
 
   // Expose created issue's key as an output
-
+  const _config = YAML.parse(fs.readFileSync(configPath, 'utf8'))
   const yamledResult = YAML.stringify(result)
-  const extendedConfig = { ...config, ...result }
+  const extendedConfig = { ..._config, ...result }
 
   fs.writeFileSync(configPath, YAML.stringify(extendedConfig))
 
@@ -39,22 +39,23 @@ async function exec() {
     }).execute()
 
     if (result) {
-      core.debug(`Result was returned.`)
       if (Array.isArray(result)) {
         core.debug('Result is an array')
+
         const outputIssues = []
 
         for (const item of result) {
           await writeKey(item)
           outputIssues.push(item.get('key'))
         }
-
-        core.setOutput('issues', outputIssues.join(','))
+        const issueListString = outputIssues.join(',')
+        core.setOutput('issues', issueListString)
 
         return
       }
-      core.debug('Result is not an array')
-      core.setOutput('issue', result.get('key'))
+      const issueKey = result.get('key')
+      core.setOutput('issue', issueKey)
+      core.setOutput('issues', [issueKey])
 
       return await writeKey(result)
     }

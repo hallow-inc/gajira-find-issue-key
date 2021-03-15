@@ -10,6 +10,19 @@
     "plugin:github/recommended",
     "plugin:jest/all"
   ],
+  "env": {
+    "commonjs": true,
+    "es6": true,
+    "jest": true,
+    "node": true
+  },
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "rules": {
     "no-plusplus": "off",
     "import/no-namespace": "off",
@@ -25,12 +38,5 @@
     "security/detect-non-literal-regexp": "off",
     "security/detect-non-literal-require": "off",
     "security/detect-non-literal-fs-filename": "off"
-  },
-  "env": {
-    "node": true,
-    "jest": true,
-    "es2021": true,
-    "es6": true,
-    "jest/globals": true
   }
 }
