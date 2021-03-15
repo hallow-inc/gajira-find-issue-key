@@ -218,12 +218,8 @@ module.exports = class {
         ...context.repo,
         issue_number: issueNumber,
         title: `${issueKey}: ${issueTitle}`,
-<<<<<<< HEAD
         body: issueBody,
         assignees: [],
-=======
-        body: this.J2M.toM(issueBody),
->>>>>>> 6a1804c (Rebasing)
         // assignees: issueAssignee ? [issueAssignee] : null,
         milestone: milestoneNumber,
       })
@@ -315,15 +311,11 @@ module.exports = class {
         if (match) {
           let skipCommit = false
 
-<<<<<<< HEAD
           if (
             item.commit.message.startsWith('Merge branch') ||
             item.commit.message.startsWith('Merge pull')
           ) {
             core.debug('Commit message indicates that it is a merge')
-=======
-          if ((item.commit.message.startsWith('Merge branch') || item.commit.message.startsWith('Merge pull'))) {
->>>>>>> 6a1804c (Rebasing)
             if (!this.argv.includeMergeMessages) {
               skipCommit = true
             }
