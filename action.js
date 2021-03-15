@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const _ = require('lodash')
 const core = require('@actions/core')
 const github = require('@actions/github')
@@ -14,25 +13,6 @@ const {
   endJiraToken,
   eventTemplates,
 } = require('./utils')
-
-async function getPreviousReleaseRef (octo) {
-  if (!context.repository || !octo) {
-    return
-  }
-  const releases = await octo.repos.getLatestRelease({
-    ...context.repo,
-  })
-
-  // eslint-disable-next-line camelcase
-  const { tag_name } = releases.payload
-
-  // eslint-disable-next-line camelcase
-  return tag_name
-}
-
-function upperCaseFirst (str) {
-  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1))
-}
 
 module.exports = class {
   constructor({ githubEvent, argv, config }) {

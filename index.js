@@ -79,24 +79,14 @@ function parseArgs() {
     GitHubMilestones: core.getInput('generate-github-milestones') === 'true',
     returns: core.getInput('returns') || 'first',
     updatePRTitle: core.getInput('standardize-pr-title') === 'true',
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 01c138b (Handle no transitions)
     transitionChain: core.getInput('jira-transition-chain'),
     transitionOnNewBranch: core.getInput('jira-transition-on-new-branch'),
     transitionOnPrOpen: core.getInput('jira-transition-on-pr-open'),
     transitionOnPrApproval: core.getInput('jira-transition-on-pr-approval'),
     transitionOnPrMerge: core.getInput('jira-transition-on-pr-merge'),
-<<<<<<< HEAD
     gist_private: core.getInput('gist-private') === 'true',
     gist_name: core.getInput('create-gist-output-named'),
-=======
     jiraTransition: core.getInput('jira-transition'),
->>>>>>> 007b93c (Rebasing)
-=======
-
->>>>>>> 01c138b (Handle no transitions)
   }
 }
 
