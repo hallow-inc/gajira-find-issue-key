@@ -29,6 +29,10 @@ async function getPreviousReleaseRef (octo) {
   return tag_name
 }
 
+function upperCaseFirst (str) {
+  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1))
+}
+
 module.exports = class {
   constructor({ githubEvent, argv, config }) {
     this.Jira = new Jira({
