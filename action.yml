@@ -72,6 +72,7 @@ inputs:
 
     default: 'false'
     required: false
+<<<<<<< HEAD
   jira-transition-chain:
     description: >
       A comma separated list of all allowed Jira Transitions in order
@@ -92,6 +93,12 @@ inputs:
     description: >
       The name of the transition to apply when a Pull Request is closed and merged
     required: false
+=======
+  jira-transition:
+      description: >
+        A transition name to update the JIRA Ticket to such as 'In Progress'
+      required: false
+>>>>>>> 007b93c (Rebasing)
   github-token:
     description: GitHub Token used for authentication
     required: false
