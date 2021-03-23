@@ -1,14 +1,14 @@
-const { describe } = require('jest-circus')
-const Jira = require('../src/common/net/Jira')
+const { baseUrl, auth } = require('./config/constants')
 
-const BASE_URL = process.env.JIRA_BASE_URL
-const TOKEN = process.env.JIRA_TOKEN
-const EMAIL = process.env.JIRA_EMAIL
-
-describe('jira Tests', () => {
+describe('validate that jira variables exist', () => {
+  it('check for Jira Environment Variables', () => {
+    expect.hasAssertions()
+    expect(baseUrl).toBeTruthy()
+    expect(auth.token).toBeTruthy()
+    expect(auth.email).toBeTruthy()
+  })
   it('jira Base Url uses HTTPS', () => {
     expect.hasAssertions()
-    expect(BASE_URL).toBeTruthy()
-    expect(BASE_URL.substr(0, 5)).toStrictEqual('https')
+    expect(baseUrl.substr(0, 5)).toStrictEqual('https')
   })
 })

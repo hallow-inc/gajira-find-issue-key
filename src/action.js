@@ -38,6 +38,7 @@ module.exports = class {
     this.createGist = false
     this.gist_private = config.gist_private
     this.transitionChain = []
+    this.fixVersion = argv.fixVersion
     if (argv.transitionChain) {
       this.transitionChain = argv.transitionChain.split(',')
     }
@@ -248,13 +249,13 @@ module.exports = class {
     // Get or set milestone from issue
     // for (let version of jiraIssue.fixVersions) {
     core.debug(
-      `JiraIssue is in project ${jiraIssue.get('projectKey')} sprint ${jiraIssue.get('sprint')}`,
+      `JiraIssue is in project ${jiraIssue.get('projectKey')} Fix Version ${this.fixVersion}`,
     )
 
     const msNumber = await this.createOrUpdateMilestone(
-      jiraIssue.get('sprint') || null,
+      this.fixVersion || null,
       jiraIssue.get('duedate'),
-      `Jira project ${jiraIssue.get('projectKey')} sprint ${jiraIssue.get('sprint')}`,
+      `Jira project ${jiraIssue.get('projectKey')} Fix Version ${this.fixVersion}`,
     )
 
     // set or update github issue
@@ -344,12 +345,26 @@ module.exports = class {
       // and this can be converted to Markdown
       // TODO: Harass Atlassian about conversion between their own products
       const issue = await this.Jira.getIssue(issueKey, {}, '3')
-      const issueV2 = await this.Jira.getIssue(issueKey, { fields: ['description', 'sprint'] }, '2')
+      const issueV2 = await this.Jira.getIssue(
+        issueKey,
+        { fields: ['description', 'fixVersions'] },
+        '2',
+      )
       const issueObject = new Map()
 
       if (issue) {
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
         issueObject.set('key', issue.key)
+        const _fixVersions = new Set(issue.fields.fixVersions?.map((f) => f.name))
+        if (this.fixVersion) {
+          if (!_fixVersions.has(this.fixVersion)) {
+            _fixVersions.add(this.fixVersion)
+            // this.Jira.updateIssue()
+            // Update the Jira Issue to include the fix version and Project
+          }
+        }
+        const fixVersions = Array.from(_fixVersions)
+
         try {
           issueObject.set('key', issue.key)
           if (Array.isArray(issue.fields.customfield_10500)) {
@@ -360,6 +375,8 @@ module.exports = class {
           }
           issueObject.set('projectName', issue.fields.project.name)
           core.debug(`Jira ${issue.key} project name: ${issue.fields.project.name}`)
+          issueObject.set('fixVersions', fixVersions)
+          core.debug(`Jira ${issue.key} fixVersions name: ${issue.fields.project.name}`)
           issueObject.set('projectKey', issue.fields.project.key)
           core.debug(`Jira ${issue.key} project key: ${issue.fields.project.key}`)
           issueObject.set('priority', issue.fields.priority.name)
@@ -410,11 +427,16 @@ module.exports = class {
   }
 
   async transitionIssues() {
+    core.debug(`TransitionIssues: Number of keys ${this.foundKeys.length}`)
     for (const a of this.foundKeys) {
       const issueId = a.get('key')
-
+      core.debug(`TransitionIssues: Checking transition for ${issueId}`)
       if (this.jiraTransition && this.transitionChain) {
         const { transitions } = await this.Jira.getIssueTransitions(issueId)
+        core.debug(
+          `TransitionIssues: Transitions available for ${issueId}:
+          ${YAML.stringify(transitions)}`,
+        )
         const idxJT = this.transitionChain.indexOf(this.jiraTransition)
 
         for (let i = 0; i < idxJT; i++) {
@@ -426,7 +448,7 @@ module.exports = class {
           })
 
           if (transitionToApply) {
-            core.info(`Applying transition:${JSON.stringify(transitionToApply, null, 4)}`)
+            core.info(`Applying transition:${YAML.stringify(transitionToApply)}`)
             await this.Jira.transitionIssue(issueId, {
               transition: {
                 id: transitionToApply.id,

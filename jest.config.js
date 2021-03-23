@@ -1,5 +1,5 @@
 // jest.config.js
-require('nock').disableNetConnect()
+// require('nock').disableNetConnect()
 
 module.exports = {
   clearMocks: true,
@@ -8,5 +8,7 @@ module.exports = {
   testMatch: ['**/*.test.js'],
   testRunner: 'jest-circus/runner',
   reporters: ['default', 'jest-junit'],
-  verbose: true
+  verbose: true,
+  setupFiles: ['dotenv/config'],
+  bail: false,
 }

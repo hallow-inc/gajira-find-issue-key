@@ -88,6 +88,7 @@ function parseArgs() {
     gist_private: core.getInput('gist-private') === 'true',
     gist_name: core.getInput('create-gist-output-named'),
     jiraTransition: core.getInput('jira-transition'),
+    fixVersion: core.getInput('fix-version'),
   }
 }
 

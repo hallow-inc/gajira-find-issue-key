@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 junit.xml
+setup.js
+.env.*
 # IDE
 !.vscode
 
