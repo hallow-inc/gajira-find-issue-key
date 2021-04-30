@@ -355,7 +355,7 @@ module.exports = class {
       if (issue) {
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
         issueObject.set('key', issue.key)
-        const _fixVersions = new Set(issue.fields.fixVersions?.map((f) => f.name))
+        const _fixVersions = new Set(issue.fields.fixVersions.map((f) => f.name))
         if (this.fixVersion) {
           if (!_fixVersions.has(this.fixVersion)) {
             _fixVersions.add(this.fixVersion)
