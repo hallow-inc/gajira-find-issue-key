@@ -207,7 +207,7 @@ module.exports = class {
 
     core.debug(`Checking for ${issueKey} in list of issues`)
     for (const i of issues.data) {
-      if (!i.pull_request && i.title.contains(issueKey)) {
+      if (!i.pull_request && i.title?.contains(issueKey)) {
         issueNumber = i.issue_number
         break
       }
@@ -395,7 +395,7 @@ module.exports = class {
           core.debug(`Jira ${issue.key} summary: ${issue.fields.summary}`)
           if (issueV2.fields.description) {
             issueObject.set('descriptionJira', issueV2.fields.description)
-            issueObject.set('description', this.J2M.toM(issue.fields.description))
+            issueObject.set('description', this.J2M.toM(issueV2.fields.description))
           }
           if (issue.fields.sprint) {
             issueObject.set('sprint', issue.fields.sprint.name)

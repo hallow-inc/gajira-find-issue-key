@@ -22,17 +22,20 @@ jobs:
               uses: ./
               with:
                   from: commits
+                  github-token: ${{secrets.GITHUB_TOKEN}}
 
             - name: 'Find Issue Key'
               id: find
               uses: ./
               with:
                   string: Search is performed in this string. GA-250 will be found
+                  github-token: ${{secrets.GITHUB_TOKEN}}
 
             - name: 'Find Issue Key'
               uses: ./
               with:
                   string: ${{ github.event.ref }} will search in branch name
+                  github-token: ${{secrets.GITHUB_TOKEN}}
 
             - name: 'Find issue info'
               env:
