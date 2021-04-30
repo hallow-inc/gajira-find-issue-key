@@ -57,7 +57,7 @@ module.exports = class {
       this.jiraTransition = argv.transitionOnNewBranch
     }
 
-    this.github = new github.GitHub(argv.githubToken) || null
+    this.github = github.getOctokit(argv.githubToken) || github
 
     if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
       this.headRef = githubEvent.pull_request.head.ref || null
