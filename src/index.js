@@ -72,7 +72,6 @@ function parseArgs() {
   return {
     string: core.getInput('string') || config.string,
     from: fromList.includes(core.getInput('from')) ? core.getInput('from') : 'commits',
-
     headRef: core.getInput('head-ref'),
     baseRef: core.getInput('base-ref'),
     includeMergeMessages: core.getInput('include-merge-messages') === 'true',

@@ -5,8 +5,6 @@ const githubToken = core.getInput('token') || core.getInput('github-token')
 
 export const githubAuthed = githubToken ? github.getOctokit(githubToken) : github
 
-const { parseArgs } = require('index')
-
 export const { context } = githubAuthed
 export async function getPreviousReleaseRef(octo) {
   if (!context.repository || !octo) {

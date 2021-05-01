@@ -33754,8 +33754,6 @@ const githubToken = core.getInput('token') || core.getInput('github-token')
 
 const githubAuthed = githubToken ? github.getOctokit(githubToken) : github
 
-const { parseArgs } = __nccwpck_require__(8819)
-
 const { context } = githubAuthed
 async function getPreviousReleaseRef(octo) {
   if (!context.repository || !octo) {
@@ -33822,14 +33820,6 @@ function assignRefs(_githubEvent, _context, _argv) {
   baseRef = _argv.baseRef || baseRef || null
   return { headRef, baseRef }
 }
-
-
-/***/ }),
-
-/***/ 8819:
-/***/ ((module) => {
-
-module.exports = eval("require")("index");
 
 
 /***/ }),
@@ -34171,7 +34161,6 @@ function parseArgs() {
   return {
     string: core.getInput('string') || config.string,
     from: fromList.includes(core.getInput('from')) ? core.getInput('from') : 'commits',
-
     headRef: core.getInput('head-ref'),
     baseRef: core.getInput('base-ref'),
     includeMergeMessages: core.getInput('include-merge-messages') === 'true',
