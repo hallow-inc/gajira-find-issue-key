@@ -1,12 +1,14 @@
 const _ = require('lodash')
 const core = require('@actions/core')
-const github = require('@actions/github')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
 const {
   getPreviousReleaseRef,
   upperCaseFirst,
+  githubAuthed,
+  assignJiraTransition,
+  assignRefs,
   context,
   issueIdRegEx,
   startJiraToken,
@@ -28,7 +30,7 @@ module.exports = class {
     this.config = config
     this.argv = argv
     this.githubEvent = githubEvent || context.payload
-    this.github = null
+    this.github = githubAuthed
     this.createIssue = argv.createIssue
     this.updatePRTitle = argv.updatePRTitle
     this.commitMessageList = null
@@ -37,49 +39,13 @@ module.exports = class {
     this.jiraTransition = null
     this.createGist = false
     this.gist_private = config.gist_private
-    this.transitionChain = []
     this.fixVersion = argv.fixVersion
-    if (argv.transitionChain) {
-      this.transitionChain = argv.transitionChain.split(',')
-    }
+    this.transitionChain = argv.transitionChain.split(',') || []
+    this.jiraTransition = assignJiraTransition(context, argv)
+    const refs = assignRefs(githubEvent, context, argv)
+    this.headRef = refs.headRef
+    this.baseRef = refs.baseRef
 
-    if (context.eventName === 'pull_request') {
-      if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true') {
-        this.jiraTransition = argv.transitionOnPrMerge
-      } else if (context.payload.action in ['opened']) {
-        this.jiraTransition = argv.transitionOnPrOpen
-      }
-    } else if (context.eventName === 'pull_request_review') {
-      if (context.payload.state === 'APPROVED') {
-        this.jiraTransition = argv.transitionOnPrApproval
-      }
-    } else if (context.eventName in ['create']) {
-      this.jiraTransition = argv.transitionOnNewBranch
-    }
-
-    this.github = github.getOctokit(argv.githubToken) || github
-
-    if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
-      this.headRef = githubEvent.pull_request.head.ref || null
-      this.baseRef = githubEvent.pull_request.base.ref || null
-    } else if (Object.prototype.hasOwnProperty.call(githubEvent, 'ref')) {
-      this.headRef = githubEvent.ref || null
-      this.baseRef = null
-    }
-    if (context.eventName === 'pull_request') {
-      this.headRef = this.headRef || context.payload.pull_request.head.ref || null
-      this.baseRef = this.baseRef || context.payload.pull_request.base.ref || null
-    } else if (context.eventName === 'push') {
-      if (context.payload.ref.startsWith('refs/tags')) {
-        this.baseRef = this.baseRef || getPreviousReleaseRef(this.github)
-      }
-      this.headRef = this.headRef || context.payload.ref || null
-    }
-    this.headRef = argv.headRef || this.headRef || null
-    this.baseRef = argv.baseRef || this.baseRef || null
-    if (argv.githubToken) {
-      this.github = new github.GitHub(argv.githubToken) || null
-    }
     if (config.gist_name) this.createGist = true
   }
 

@@ -1,6 +1,13 @@
 const github = require('@actions/github')
+const core = require('@actions/core')
 
-export const { context } = github
+const githubToken = core.getInput('token') || core.getInput('github-token')
+
+export const githubAuthed = githubToken ? github.getOctokit(githubToken) : github
+
+const { parseArgs } = require('index')
+
+export const { context } = githubAuthed
 export async function getPreviousReleaseRef(octo) {
   if (!context.repository || !octo) {
     return
@@ -26,4 +33,43 @@ export const endJiraToken = 'JIRA-ISSUE-TEXT-END'
 export const eventTemplates = {
   branch: '{{event.ref}}',
   commits: "{{event.commits.map(c=>c.message).join(' ')}}",
+}
+
+export function assignJiraTransition(_context, _argv) {
+  if (_context.eventName === 'pull_request') {
+    if (_context.payload.action in ['closed'] && _context.payload.pull_request.merged === 'true') {
+      return _argv.transitionOnPrMerge
+    } else if (_context.payload.action in ['opened']) {
+      return _argv.transitionOnPrOpen
+    }
+  } else if (_context.eventName === 'pull_request_review') {
+    if (_context.payload.state === 'APPROVED') {
+      return _argv.transitionOnPrApproval
+    }
+  } else if (_context.eventName in ['create']) {
+    return _argv.transitionOnNewBranch
+  }
+}
+
+export function assignRefs(_githubEvent, _context, _argv) {
+  let headRef, baseRef
+  if (Object.prototype.hasOwnProperty.call(_githubEvent, 'pull_request')) {
+    headRef = _githubEvent.pull_request.head.ref || null
+    baseRef = _githubEvent.pull_request.base.ref || null
+  } else if (Object.prototype.hasOwnProperty.call(_githubEvent, 'ref')) {
+    headRef = _githubEvent.ref || null
+    baseRef = null
+  }
+  if (_context.eventName === 'pull_request') {
+    headRef = headRef || _context.payload.pull_request.head.ref || null
+    baseRef = baseRef || _context.payload.pull_request.base.ref || null
+  } else if (_context.eventName === 'push') {
+    if (_context.payload.ref.startsWith('refs/tags')) {
+      baseRef = baseRef || getPreviousReleaseRef(github)
+    }
+    headRef = headRef || _context.payload.ref || null
+  }
+  headRef = _argv.headRef || headRef || null
+  baseRef = _argv.baseRef || baseRef || null
+  return { headRef, baseRef }
 }

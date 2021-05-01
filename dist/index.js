@@ -32847,13 +32847,15 @@ module.exports = __nccwpck_require__(5065).YAML
 
 const _ = __nccwpck_require__(250)
 const core = __nccwpck_require__(2186)
-const github = __nccwpck_require__(5438)
 const YAML = __nccwpck_require__(3552)
 const Jira = __nccwpck_require__(6624)
 const J2M = __nccwpck_require__(1440)
 const {
   getPreviousReleaseRef,
   upperCaseFirst,
+  githubAuthed,
+  assignJiraTransition,
+  assignRefs,
   context,
   issueIdRegEx,
   startJiraToken,
@@ -32875,7 +32877,7 @@ module.exports = class {
     this.config = config
     this.argv = argv
     this.githubEvent = githubEvent || context.payload
-    this.github = null
+    this.github = githubAuthed
     this.createIssue = argv.createIssue
     this.updatePRTitle = argv.updatePRTitle
     this.commitMessageList = null
@@ -32884,49 +32886,13 @@ module.exports = class {
     this.jiraTransition = null
     this.createGist = false
     this.gist_private = config.gist_private
-    this.transitionChain = []
     this.fixVersion = argv.fixVersion
-    if (argv.transitionChain) {
-      this.transitionChain = argv.transitionChain.split(',')
-    }
+    this.transitionChain = argv.transitionChain.split(',') || []
+    this.jiraTransition = assignJiraTransition(context, argv)
+    const refs = assignRefs(githubEvent, context, argv)
+    this.headRef = refs.headRef
+    this.baseRef = refs.baseRef
 
-    if (context.eventName === 'pull_request') {
-      if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true') {
-        this.jiraTransition = argv.transitionOnPrMerge
-      } else if (context.payload.action in ['opened']) {
-        this.jiraTransition = argv.transitionOnPrOpen
-      }
-    } else if (context.eventName === 'pull_request_review') {
-      if (context.payload.state === 'APPROVED') {
-        this.jiraTransition = argv.transitionOnPrApproval
-      }
-    } else if (context.eventName in ['create']) {
-      this.jiraTransition = argv.transitionOnNewBranch
-    }
-
-    this.github = github.getOctokit(argv.githubToken) || github
-
-    if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
-      this.headRef = githubEvent.pull_request.head.ref || null
-      this.baseRef = githubEvent.pull_request.base.ref || null
-    } else if (Object.prototype.hasOwnProperty.call(githubEvent, 'ref')) {
-      this.headRef = githubEvent.ref || null
-      this.baseRef = null
-    }
-    if (context.eventName === 'pull_request') {
-      this.headRef = this.headRef || context.payload.pull_request.head.ref || null
-      this.baseRef = this.baseRef || context.payload.pull_request.base.ref || null
-    } else if (context.eventName === 'push') {
-      if (context.payload.ref.startsWith('refs/tags')) {
-        this.baseRef = this.baseRef || getPreviousReleaseRef(this.github)
-      }
-      this.headRef = this.headRef || context.payload.ref || null
-    }
-    this.headRef = argv.headRef || this.headRef || null
-    this.baseRef = argv.baseRef || this.baseRef || null
-    if (argv.githubToken) {
-      this.github = new github.GitHub(argv.githubToken) || null
-    }
     if (config.gist_name) this.createGist = true
   }
 
@@ -33770,17 +33736,27 @@ module.exports = class {
 "use strict";
 __nccwpck_require__.r(__webpack_exports__);
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "githubAuthed": () => (/* binding */ githubAuthed),
 /* harmony export */   "context": () => (/* binding */ context),
 /* harmony export */   "getPreviousReleaseRef": () => (/* binding */ getPreviousReleaseRef),
 /* harmony export */   "upperCaseFirst": () => (/* binding */ upperCaseFirst),
 /* harmony export */   "issueIdRegEx": () => (/* binding */ issueIdRegEx),
 /* harmony export */   "startJiraToken": () => (/* binding */ startJiraToken),
 /* harmony export */   "endJiraToken": () => (/* binding */ endJiraToken),
-/* harmony export */   "eventTemplates": () => (/* binding */ eventTemplates)
+/* harmony export */   "eventTemplates": () => (/* binding */ eventTemplates),
+/* harmony export */   "assignJiraTransition": () => (/* binding */ assignJiraTransition),
+/* harmony export */   "assignRefs": () => (/* binding */ assignRefs)
 /* harmony export */ });
 const github = __nccwpck_require__(5438)
+const core = __nccwpck_require__(2186)
 
-const { context } = github
+const githubToken = core.getInput('token') || core.getInput('github-token')
+
+const githubAuthed = githubToken ? github.getOctokit(githubToken) : github
+
+const { parseArgs } = __nccwpck_require__(8819)
+
+const { context } = githubAuthed
 async function getPreviousReleaseRef(octo) {
   if (!context.repository || !octo) {
     return
@@ -33807,6 +33783,53 @@ const eventTemplates = {
   branch: '{{event.ref}}',
   commits: "{{event.commits.map(c=>c.message).join(' ')}}",
 }
+
+function assignJiraTransition(_context, _argv) {
+  if (_context.eventName === 'pull_request') {
+    if (_context.payload.action in ['closed'] && _context.payload.pull_request.merged === 'true') {
+      return _argv.transitionOnPrMerge
+    } else if (_context.payload.action in ['opened']) {
+      return _argv.transitionOnPrOpen
+    }
+  } else if (_context.eventName === 'pull_request_review') {
+    if (_context.payload.state === 'APPROVED') {
+      return _argv.transitionOnPrApproval
+    }
+  } else if (_context.eventName in ['create']) {
+    return _argv.transitionOnNewBranch
+  }
+}
+
+function assignRefs(_githubEvent, _context, _argv) {
+  let headRef, baseRef
+  if (Object.prototype.hasOwnProperty.call(_githubEvent, 'pull_request')) {
+    headRef = _githubEvent.pull_request.head.ref || null
+    baseRef = _githubEvent.pull_request.base.ref || null
+  } else if (Object.prototype.hasOwnProperty.call(_githubEvent, 'ref')) {
+    headRef = _githubEvent.ref || null
+    baseRef = null
+  }
+  if (_context.eventName === 'pull_request') {
+    headRef = headRef || _context.payload.pull_request.head.ref || null
+    baseRef = baseRef || _context.payload.pull_request.base.ref || null
+  } else if (_context.eventName === 'push') {
+    if (_context.payload.ref.startsWith('refs/tags')) {
+      baseRef = baseRef || getPreviousReleaseRef(github)
+    }
+    headRef = headRef || _context.payload.ref || null
+  }
+  headRef = _argv.headRef || headRef || null
+  baseRef = _argv.baseRef || baseRef || null
+  return { headRef, baseRef }
+}
+
+
+/***/ }),
+
+/***/ 8819:
+/***/ ((module) => {
+
+module.exports = eval("require")("index");
 
 
 /***/ }),
@@ -34148,7 +34171,7 @@ function parseArgs() {
   return {
     string: core.getInput('string') || config.string,
     from: fromList.includes(core.getInput('from')) ? core.getInput('from') : 'commits',
-    githubToken: core.getInput('github-token'),
+
     headRef: core.getInput('head-ref'),
     baseRef: core.getInput('base-ref'),
     includeMergeMessages: core.getInput('include-merge-messages') === 'true',
