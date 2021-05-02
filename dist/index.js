@@ -33231,7 +33231,7 @@ module.exports = class {
   }
 
   async updatePullRequestBody(startToken, endToken) {
-    if (!this.githubEvent.pull_request && !context.payload.pull_request) {
+    if (!this.githubEvent.pull_request) {
       core.info(
         `Skipping pull request update, pull_request not found in current github context, or received event`,
       )
@@ -33241,7 +33241,7 @@ module.exports = class {
     const issues = await this.formattedIssueList()
     const text = `### Linked Jira Issues:\n\n${issues}\n`
 
-    const { number, body, title } = this.githubEvent.pull_request || context.payload.pull_request
+    const { number, body, title } = this.githubEvent.pull_request
 
     core.debug(`Updating PR number ${number}`)
     core.debug(`With text:\n ${text}`)
@@ -33442,10 +33442,10 @@ module.exports = class {
       const issueObject = new Map()
 
       if (issue) {
-        core.startGroup(style.bold.cyanBright(`Issue ${issue.key} details`))
-        core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
+        core.startGroup(style.bold.cyan(`Issue ${issue.key} raw details`))
+        core.debug(style.cyan(`Issue ${issue.key}: \n${YAML.stringify(issue)}`))
         core.endGroup()
-
+        core.startGroup(style.bold.cyanBright(`Issue ${issue.key} collected details`))
         issueObject.set('key', issue.key)
         const _fixVersions = new Set(issue.fields.fixVersions.map((f) => f.name))
         if (this.fixVersion) {
@@ -33461,30 +33461,26 @@ module.exports = class {
           issueObject.set('key', issue.key)
           if (Array.isArray(issue.fields.customfield_10500)) {
             // Pull Request
-            core.debug(
-              `Jira ${issue.key} linked pull request: ${issue.fields.customfield_10500[0]}`,
-            )
+            core.debug(`linked pull request: ${issue.fields.customfield_10500[0]}`)
           }
           issueObject.set('projectName', issue.fields.project.name)
-          core.debug(`Jira ${issue.key} project name: ${issue.fields.project.name}`)
+          core.debug(`project name: ${issue.fields.project.name}`)
           issueObject.set('fixVersions', fixVersions)
-          core.debug(`Jira ${issue.key} fixVersions name: ${issue.fields.project.name}`)
+          core.debug(`fixVersions name: ${issue.fields.project.name}`)
           issueObject.set('projectKey', issue.fields.project.key)
-          core.debug(`Jira ${issue.key} project key: ${issue.fields.project.key}`)
+          core.debug(`project key: ${issue.fields.project.key}`)
           issueObject.set('priority', issue.fields.priority.name)
-          core.debug(`Jira ${issue.key} priority: ${issue.fields.priority.name}`)
+          core.debug(`priority: ${issue.fields.priority.name}`)
           issueObject.set('status', issue.fields.status.name)
-          core.debug(`Jira ${issue.key} status: ${issue.fields.status.name}`)
+          core.debug(`status: ${issue.fields.status.name}`)
           issueObject.set('statusCategory', issue.fields.status.statusCategory.name)
-          core.debug(`Jira ${issue.key} statusCategory: ${issue.fields.status.statusCategory.name}`)
+          core.debug(`statusCategory: ${issue.fields.status.statusCategory.name}`)
           if (Array.isArray(issue.fields.customfield_11306)) {
             // Assigned to
-            core.debug(
-              `Jira ${issue.key} displayName: ${issue.fields.customfield_11306[0].displayName}`,
-            )
+            core.debug(`displayName: ${issue.fields.customfield_11306[0].displayName}`)
           }
           issueObject.set('summary', issue.fields.summary)
-          core.debug(`Jira ${issue.key} summary: ${issue.fields.summary}`)
+          core.debug(`summary: ${issue.fields.summary}`)
           if (issueV2.fields.description) {
             issueObject.set('descriptionJira', issueV2.fields.description)
             issueObject.set('description', this.J2M.toM(issueV2.fields.description))
@@ -33492,15 +33488,15 @@ module.exports = class {
           if (issue.fields.sprint) {
             issueObject.set('sprint', issue.fields.sprint.name)
             issueObject.set('duedate', issue.fields.sprint.endDate)
-            core.startGroup(`Jira ${issue.key} sprint details`)
-            core.debug(`Jira ${issue.key} sprint: \n${YAML.stringify(issue.fields.sprint)}`)
+            core.startGroup(`sprint details`)
+            core.debug(`sprint: \n${YAML.stringify(issue.fields.sprint)}`)
             core.endGroup()
           }
           if (issueV2.fields.sprint) {
             issueObject.set('sprint', issueV2.fields.sprint.name)
             issueObject.set('duedate', issueV2.fields.sprint.endDate)
-            core.startGroup(`JiraV2 ${issue.key} sprint details`)
-            core.debug(`JiraV2 ${issue.key} sprint: \n${YAML.stringify(issueV2.fields.sprint)}`)
+            core.startGroup(`JiraV2 sprint details`)
+            core.debug(`JiraV2 sprint: \n${YAML.stringify(issueV2.fields.sprint)}`)
             core.endGroup()
           }
 
@@ -33516,9 +33512,16 @@ module.exports = class {
         }
       }
     }
-    core.info(style.blueBright(`Found Jira Keys  : ${this.foundKeys.map((a) => a.get('key'))}\n`))
+    core.endGroup()
     core.info(
-      style.yellowBright(`Found GitHub Keys: ${this.foundKeys.map((a) => a.get('ghNumber'))}\n`),
+      style.blueBright(
+        `Found Jira Keys  : ${style.bold(this.foundKeys.map((a) => a.get('key')))}\n`,
+      ),
+    )
+    core.info(
+      style.yellowBright(
+        `Found GitHub Keys: ${style.bold(this.foundKeys.map((a) => a.get('ghNumber')))}\n`,
+      ),
     )
 
     return this.foundKeys
