@@ -6,7 +6,7 @@ const J2M = require('./lib/J2M')
 const {
   getPreviousReleaseRef,
   upperCaseFirst,
-  githubAuthed,
+  octokit,
   assignJiraTransition,
   assignRefs,
   context,
@@ -25,12 +25,12 @@ module.exports = class {
     })
     this.jiraUrl = config.baseUrl
     this.J2M = new J2M()
-    core.debug(`Config found: ${JSON.stringify(config)}`)
-    core.debug(`Args found: ${JSON.stringify(argv)}`)
+    core.debug(`Config found: ${YAML.stringify(config)}`)
+    core.debug(`Args found: ${YAML.stringify(argv)}`)
     this.config = config
     this.argv = argv
     this.githubEvent = githubEvent || context.payload
-    this.github = githubAuthed
+    this.github = octokit
     this.createIssue = argv.createIssue
     this.updatePRTitle = argv.updatePRTitle
     this.commitMessageList = null

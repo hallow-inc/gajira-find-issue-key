@@ -99,7 +99,7 @@ inputs:
         required: false
     github-token:
         description: GitHub Token used for authentication
-        required: false
+        required: true
 
     create-gist-output-named:
         description: >
