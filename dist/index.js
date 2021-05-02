@@ -32902,7 +32902,7 @@ module.exports = class {
     if (!issueMilestone) {
       return
     }
-    const milestones = await this.github.issues.listMilestones({
+    const milestones = await this.github.rest.issues.listMilestones({
       ...context.repo,
       state: 'all',
     })
@@ -33001,7 +33001,7 @@ module.exports = class {
     if (issues) {
       const bodyUpdate = await this.updateStringByToken(startToken, endToken, body, text)
 
-      await this.github.pulls.update({
+      await this.github.rest.pulls.update({
         ...context.repo,
         title: newTitle,
         body: bodyUpdate,
@@ -33012,9 +33012,12 @@ module.exports = class {
 
   async createOrUpdateGHIssue(issueKey, issueTitle, issueBody, issueAssignee, milestoneNumber) {
     core.debug(`Getting list of issues`)
-    const issues = await this.github.issues.listForRepo({
+    const issues = await this.github.rest.issues.listForRepo({
       ...context.repo,
       state: 'open',
+      milestone: '*',
+      assignee: '*',
+      sort: 'created',
     })
     let issueNumber = null
 
@@ -33030,7 +33033,7 @@ module.exports = class {
 
     if (issueNumber) {
       core.debug(`Updating ${issueKey} with issue number ${issueNumber}`)
-      issue = await this.github.issues.update({
+      issue = await this.github.rest.issues.update({
         ...context.repo,
         issue_number: issueNumber,
         title: `${issueKey}: ${issueTitle}`,
@@ -33041,7 +33044,7 @@ module.exports = class {
       })
     } else {
       core.debug(`Creating ${issueKey}`)
-      issue = await this.github.issues.create({
+      issue = await this.github.rest.issues.create({
         ...context.repo,
         title: `${issueKey}: ${issueTitle}`,
         body: issueBody,
@@ -33092,7 +33095,7 @@ module.exports = class {
     }
     core.debug(`Getting list of github commits between ${this.baseRef} and ${this.headRef}`)
     // This will work fine up to 250 commit messages
-    const commits = await this.github.repos.compareCommits({
+    const commits = await this.github.rest.repos.compareCommits({
       ...context.repo,
       base: this.baseRef,
       head: this.headRef,
@@ -33103,7 +33106,7 @@ module.exports = class {
     }
     const fullArray = []
 
-    const { title } = this.githubEvent.pull_request || context.payload.pull_request
+    const { title } = this.githubEvent.pull_request
 
     if (title) {
       match = title.match(issueIdRegEx)
