@@ -90,4 +90,6 @@ typings/
 .fusebox/
 
 # DynamoDB Local files
-.dynamodb/.secrets
+.dynamodb/
+
+.secrets
