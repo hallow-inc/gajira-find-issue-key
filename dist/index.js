@@ -32902,7 +32902,7 @@ module.exports = class {
     if (!issueMilestone) {
       return
     }
-    const milestones = await this.github.issues.listMilestonesForRepo({
+    const milestones = await this.github.issues.listMilestones({
       ...context.repo,
       state: 'all',
     })
