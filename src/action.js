@@ -3,6 +3,7 @@ const core = require('@actions/core')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
+const style = require('ansi-colors')
 const {
   getPreviousReleaseRef,
   upperCaseFirst,
@@ -52,9 +53,9 @@ module.exports = class {
   // if (context.payload.action in ['closed'] && context.payload.pull_request.merged === 'true')
 
   async findGithubMilestone(issueMilestone) {
-    if (!issueMilestone) {
-      return
-    }
+    core.info(
+      style.bold.yellow(`Milestone: finding a milestone with title matching ${issueMilestone}`),
+    )
     const milestones = await this.github.issues.listMilestones({
       ...context.repo,
       state: 'all',
@@ -62,16 +63,17 @@ module.exports = class {
 
     for (const element of milestones.data) {
       if (element.title === issueMilestone.toString()) {
-        core.debug(`Existing milestone found: ${element.title}`)
-
+        core.info(style.bold.yellow(`Milestone: found ${element.title}`))
         return element
       }
     }
-    core.debug(`Existing milestone not found.`)
+    core.debug(style.bold.yellow(`Milestone: Existing milestone not found.`))
   }
 
   async createOrUpdateMilestone(issueMilestone, issueMilestoneDueDate, issueMilestoneDescription) {
-    core.debug(`createOrUpdateMilestone: issueMilestone is ${issueMilestone}`)
+    core.debug(
+      style.bold.yellow.underline(`createOrUpdateMilestone: issueMilestone is ${issueMilestone}`),
+    )
 
     let milestone = await this.findGithubMilestone(issueMilestone)
 
@@ -83,7 +85,9 @@ module.exports = class {
         state: 'open',
         due_on: issueMilestoneDueDate,
       })
-
+      core.info(
+        style.bold.yellow(`Milestone: ${issueMilestone} with number ${milestone.number} updated`),
+      )
       return milestone.number
     }
 
@@ -95,6 +99,10 @@ module.exports = class {
       // YYYY-MM-DDTHH:MM:SSZ
       due_on: issueMilestoneDueDate,
     })
+
+    core.info(
+      style.bold.yellow(`Milestone: ${issueMilestone} with number ${milestone.number} created`),
+    )
 
     return milestone.number
   }
@@ -114,7 +122,7 @@ module.exports = class {
 
   async updatePullRequestBody(startToken, endToken) {
     if (!this.githubEvent.pull_request && !context.payload.pull_request) {
-      core.debug(
+      core.info(
         `Skipping pull request update, pull_request not found in current github context, or received event`,
       )
 
@@ -141,7 +149,7 @@ module.exports = class {
 
           const { groups } = newTitle.match(re)
 
-          core.debug(`The title match found: ${YAML.stringify(groups)}`)
+          core.info(`The title match found: ${YAML.stringify(groups)}`)
 
           newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groups.title.trim())}`.slice(0, 71)
           core.setOutput('title', `${upperCaseFirst(groups.title.trim())}`)
@@ -207,8 +215,9 @@ module.exports = class {
     }
 
     this.githubIssues.push(issue.data.number)
-
+    core.startGroup(`GitHub issue ${issue.data.number} data`)
     core.debug(`Github Issue: \n${YAML.stringify(issue.data)}`)
+    core.endGroup()
 
     return issue.data.number
   }
@@ -216,7 +225,7 @@ module.exports = class {
   async jiraToGitHub(jiraIssue) {
     // Get or set milestone from issue
     // for (let version of jiraIssue.fixVersions) {
-    core.debug(
+    core.info(
       `JiraIssue is in project ${jiraIssue.get('projectKey')} Fix Version ${this.fixVersion}`,
     )
 
@@ -241,11 +250,13 @@ module.exports = class {
     let match = null
 
     if (!(this.baseRef && this.headRef)) {
-      core.debug('Base ref and head ref not found')
+      core.info('getJiraKeysFromGitRange: Base ref and head ref not found')
 
       return
     }
-    core.debug(`Getting list of github commits between ${this.baseRef} and ${this.headRef}`)
+    core.info(
+      `getJiraKeysFromGitRange: Getting list of github commits between ${this.baseRef} and ${this.headRef}`,
+    )
     // This will work fine up to 250 commit messages
     const commits = await this.github.repos.compareCommits({
       ...context.repo,
@@ -303,7 +314,7 @@ module.exports = class {
     // Make the array Unique
     const uniqueKeys = [...new Set(fullArray.map((a) => a.toUpperCase()))]
 
-    core.debug(`Unique Keys: ${uniqueKeys}\n`)
+    core.info(`Unique Keys: ${uniqueKeys}\n`)
     // Verify that the strings that look like key match real Jira keys
     this.foundKeys = []
     for (const issueKey of uniqueKeys) {
@@ -321,7 +332,10 @@ module.exports = class {
       const issueObject = new Map()
 
       if (issue) {
+        core.startGroup(style.bold.cyanBright(`Issue ${issue.key} details`))
         core.debug(`Issue ${issue.key}: \n${YAML.stringify(issue)}`)
+        core.endGroup()
+
         issueObject.set('key', issue.key)
         const _fixVersions = new Set(issue.fields.fixVersions.map((f) => f.name))
         if (this.fixVersion) {
@@ -368,12 +382,16 @@ module.exports = class {
           if (issue.fields.sprint) {
             issueObject.set('sprint', issue.fields.sprint.name)
             issueObject.set('duedate', issue.fields.sprint.endDate)
+            core.startGroup(`Jira ${issue.key} sprint details`)
             core.debug(`Jira ${issue.key} sprint: \n${YAML.stringify(issue.fields.sprint)}`)
+            core.endGroup()
           }
           if (issueV2.fields.sprint) {
             issueObject.set('sprint', issueV2.fields.sprint.name)
             issueObject.set('duedate', issueV2.fields.sprint.endDate)
+            core.startGroup(`JiraV2 ${issue.key} sprint details`)
             core.debug(`JiraV2 ${issue.key} sprint: \n${YAML.stringify(issueV2.fields.sprint)}`)
+            core.endGroup()
           }
 
           // issue.fields.comment.comments[]
@@ -388,22 +406,29 @@ module.exports = class {
         }
       }
     }
-    core.debug(`Found Jira Keys  : ${this.foundKeys.map((a) => a.get('key'))}\n`)
-    core.debug(`Found GitHub Keys: ${this.foundKeys.map((a) => a.get('ghNumber'))}\n`)
+    core.info(style.blueBright(`Found Jira Keys  : ${this.foundKeys.map((a) => a.get('key'))}\n`))
+    core.info(
+      style.yellowBright(`Found GitHub Keys: ${this.foundKeys.map((a) => a.get('ghNumber'))}\n`),
+    )
 
     return this.foundKeys
   }
 
   async transitionIssues() {
-    core.debug(`TransitionIssues: Number of keys ${this.foundKeys.length}`)
+    style.alias('transitions', style.bold.green)
+    style.alias('transitionsList', style.bold.greenBright)
+    core.debug(style.transitions(`TransitionIssues: Number of keys ${this.foundKeys.length}`))
     for (const a of this.foundKeys) {
       const issueId = a.get('key')
-      core.debug(`TransitionIssues: Checking transition for ${issueId}`)
+      core.debug(style.transitions(`TransitionIssues: Checking transition for ${issueId}`))
       if (this.jiraTransition && this.transitionChain) {
         const { transitions } = await this.Jira.getIssueTransitions(issueId)
-        core.debug(
-          `TransitionIssues: Transitions available for ${issueId}:
-          ${YAML.stringify(transitions)}`,
+        core.info(
+          style.transitions(
+            `TransitionIssues: Transitions available for ${issueId}:\n${style.transitionsList(
+              YAML.stringify(transitions),
+            )}`,
+          ),
         )
         const idxJT = this.transitionChain.indexOf(this.jiraTransition)
 
@@ -416,7 +441,11 @@ module.exports = class {
           })
 
           if (transitionToApply) {
-            core.info(`Applying transition:${YAML.stringify(transitionToApply)}`)
+            core.info(
+              style.transitions(
+                `Applying transition:\n${style.transitionsList(YAML.stringify(transitionToApply))}`,
+              ),
+            )
             await this.Jira.transitionIssue(issueId, {
               transition: {
                 id: transitionToApply.id,
@@ -428,8 +457,8 @@ module.exports = class {
       const transitionedIssue = await this.Jira.getIssue(issueId)
       const statusName = _.get(transitionedIssue, 'fields.status.name')
 
-      core.debug(`Jira ${issueId} status is: ${statusName}.`)
-      core.debug(`Link to issue: ${this.config.baseUrl}/browse/${issueId}`)
+      core.info(style.transitions(`Jira ${issueId} status is: ${statusName}.`))
+      core.info(style.transitions(`Link to issue: ${this.config.baseUrl}/browse/${issueId}`))
       a.set('status', statusName)
     }
   }

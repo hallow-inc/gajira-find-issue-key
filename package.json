@@ -14,6 +14,7 @@
         "@actions/core": "^1.2.7",
         "@actions/github": "^4.0.0",
         "adf-builder": "^3.3.0",
+        "ansi-colors": "^4.1.1",
         "lodash": "^4.17.21",
         "node-fetch": "^2.6.1",
         "yaml": "^1.10.2"
