@@ -32918,9 +32918,8 @@ module.exports = class {
   }
 
   async createOrUpdateMilestone(issueMilestone, issueMilestoneDueDate, issueMilestoneDescription) {
-    if (!issueMilestone) {
-      return
-    }
+    core.debug(`createOrUpdateMilestone: issueMilestone is ${issueMilestone}`)
+
     let milestone = await this.findGithubMilestone(issueMilestone)
 
     if (milestone) {
