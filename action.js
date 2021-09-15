@@ -110,8 +110,8 @@ module.exports = class {
             return fullText.replace(regex, `$1${insertText}$3`)
         }
 
-        core.debug(`Full text is: ${fullText}`)
-        return `${fullText.trim()}\n\n[/]: / "${startToken}"\n${insertText}\n[/]: / "${endToken}"`
+        const possibleFullText = fullText || ''
+        return `${possibleFullText.trim()}\n\n[/]: / "${startToken}"\n${insertText}\n[/]: / "${endToken}"`
     }
 
     async updatePullRequestBody(startToken, endToken) {
