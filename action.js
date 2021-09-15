@@ -15,9 +15,7 @@ const eventTemplates = {
     commits: "{{event.commits.map(c=>c.message).join(' ')}}",
 }
 
-const {
-    context
-} = github
+const { context } = github
 
 async function getPreviousReleaseRef(octo) {
     if (!context.repository || !octo) {
@@ -80,7 +78,7 @@ module.exports = class {
             this.jiraTransition = argv.transitionOnNewBranch
         }
 
-        this.github = new github.GitHub(argv.githubToken) || null
+        this.github = github.getOctokit(argv.githubToken) || null
 
         if (Object.prototype.hasOwnProperty.call(githubEvent, 'pull_request')) {
             this.headRef = githubEvent.pull_request.head.ref || null

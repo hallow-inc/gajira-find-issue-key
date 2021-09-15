@@ -58,10 +58,5 @@
   "lint-staged": {
     "*.{yml,json}": "prettier --write",
     "*.js": "eslint --cache --fix"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   }
 }
