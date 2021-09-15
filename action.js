@@ -343,7 +343,7 @@ module.exports = class {
                 `*  **[${a.get('key')}](${this.jiraUrl}/browse/${a.get('key')})** [${a.get(
             'status',
             'Jira Status Unknown',
-          )}] ${a.get('summary')} (Fix: #${a.get('ghNumber')})`,
+          )}] ${a.get('summary')}`,
             )
             .join('\n')
     }
