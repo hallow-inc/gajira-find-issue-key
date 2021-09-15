@@ -110,7 +110,7 @@ module.exports = class {
             return fullText.replace(regex, `$1${insertText}$3`)
         }
 
-        core.debug(`Full text is:`, fullText)
+        core.debug(`Full text is: ${fullText}`)
         return `${fullText.trim()}\n\n[/]: / "${startToken}"\n${insertText}\n[/]: / "${endToken}"`
     }
 
@@ -289,11 +289,6 @@ module.exports = class {
                     // issue.fields.comment.comments[]
                     // issue.fields.worklog.worklogs[]
                 } finally {
-                    try {
-                        issueObject.set('ghNumber', await this.jiraToGitHub(issueObject))
-                    } catch (error) {
-                        core.error(error)
-                    }
                     this.foundKeys.push(issueObject)
                 }
             }
