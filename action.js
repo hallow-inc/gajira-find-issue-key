@@ -150,7 +150,9 @@ module.exports = class {
                     newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groupTitle)}`.slice(0, 71)
                     core.setOutput('title', `${upperCaseFirst(groupTitle)}`)
                 } catch (error) {
+                    core.warning("catch 1 >>")
                     core.warning(error)
+                    core.warning("<< catch 1")
                 }
             }
         }
