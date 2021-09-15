@@ -77,8 +77,6 @@ function parseArgs() {
     headRef: core.getInput('head-ref'),
     baseRef: core.getInput('base-ref'),
     includeMergeMessages: core.getInput('include-merge-messages') === 'true',
-    GitHubIssues: core.getInput('generate-github-issues') === 'true',
-    GitHubMilestones: core.getInput('generate-github-milestones') === 'true',
     returns: core.getInput('returns') || 'first',
     updatePRTitle: core.getInput('standardize-pr-title') === 'true',
     transitionChain: core.getInput('jira-transition-chain'),
