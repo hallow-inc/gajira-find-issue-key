@@ -132,6 +132,7 @@ module.exports = class {
 
         let newTitle = title.trim()
 
+        core.debug(`Should update PR title: ${this.updatePRTitle}`)
         if (this.updatePRTitle) {
             core.debug(`Current PR Title: ${title}`)
 
