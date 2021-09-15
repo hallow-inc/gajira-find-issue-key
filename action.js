@@ -141,11 +141,14 @@ module.exports = class {
             if (Array.isArray(issueKeys)) {
                 try {
                     const re = /(?:\[)?(?<issues>(?:(?:[\w]{2,8})(?:[-_ ])(?:[\d]{3,5})(?:[, ]+)?)+)(?:[-:_ \]]+)(?<title>.*)?/
-                    core.debug(`The params are ${newTitle.match(re)}`)
-                    const { groups } = newTitle.match(re)
-                    const groupTitle = (groups.title || '').trim()
+                    const matches = newTitle.match(re)
+                    let groupTitle = newTitle
+                    if (matches) {
+                        const groups = matches.groups
+                        groupTitle = (groups.title || '').trim()
 
-                    core.debug(`The title match found: ${YAML.stringify(groups)}`)
+                        core.debug(`The title match found: ${YAML.stringify(groups)}`)
+                    }
 
                     newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groupTitle)}`.slice(0, 71)
                     core.setOutput('title', `${upperCaseFirst(groupTitle)}`)
