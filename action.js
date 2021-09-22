@@ -150,7 +150,13 @@ module.exports = class {
                         core.debug(`The title match found: ${YAML.stringify(groups)}`)
                     }
 
-                    newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groupTitle)}`.slice(0, 71)
+                    if (issueKeys.length > 2) {
+                        newTitle = `${issueKeys.slice(0, 2).join(', ')} (+${issueKeys.length - 2}): ${upperCaseFirst(groupTitle)}`.slice(0, 71)
+                    }
+                    else {
+                        newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groupTitle)}`.slice(0, 71)
+                    }
+                    
                     core.setOutput('title', `${upperCaseFirst(groupTitle)}`)
                 } catch (error) {
                     core.warning("catch 1 >>")
