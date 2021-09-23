@@ -140,7 +140,7 @@ module.exports = class {
 
             if (Array.isArray(issueKeys)) {
                 try {
-                    const re = /(?:\[)?(?<issues>(?:(?:[\w]{2,8})(?:[-_ ])(?:[\d]{3,5})(?:[, ]+)?)+)(?:[-:_ \]]+)(?<title>.*)?/
+                    const re = /(?:\[)?(?<issues>(?:(?:[\w]{2,8})(?:[-_ ])(?:[\d]{3,5})(?:[, ]+)?)+)(?:\(\+\d\))?(?:[-:_ \]]+)(?<title>.*)?/
                     const matches = newTitle.match(re)
                     let groupTitle = newTitle
                     if (matches) {
