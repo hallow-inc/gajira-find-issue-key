@@ -150,6 +150,12 @@ module.exports = class {
                         core.debug(`The title match found: ${YAML.stringify(groups)}`)
                     }
 
+                    const branchRe = /(?<branch>(feat|bug|chore|task)\/hlw[-|\s][\d]*\/)/i
+                    const branchMatches = newTitle.match(branchRe)
+                    if (branchMatches) {
+                        groupTitle = groupTitle.replace(branchMatches.groups.branch, '')
+                    }
+
                     if (issueKeys.length > 2) {
                         newTitle = `${issueKeys.slice(0, 1).join(', ')} (+${issueKeys.length - 1}): ${upperCaseFirst(groupTitle)}`.slice(0, 71)
                     }
