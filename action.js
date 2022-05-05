@@ -154,6 +154,7 @@ module.exports = class {
                     const branchMatches = newTitle.match(branchRe)
                     if (branchMatches) {
                         groupTitle = groupTitle.replace(branchMatches.groups.branch, '')
+                        core.debug(`Branch match found: ${YAML.stringify(branchMatches.groups)}`)
                     }
 
                     if (issueKeys.length > 2) {
