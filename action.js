@@ -151,6 +151,7 @@ module.exports = class {
                     }
 
                     const branchRe = /(?<branch>(feat|bug|chore|task)\/hlw[-|\s][\d]*\/)/i
+                    core.debug('Checking for branch matches...')
                     const branchMatches = newTitle.match(branchRe)
                     if (branchMatches) {
                         groupTitle = groupTitle.replace(branchMatches.groups.branch, '')
