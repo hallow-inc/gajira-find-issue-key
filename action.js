@@ -4,7 +4,7 @@ const github = require('@actions/github')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
-const titleCase = require('title-case')
+const { titleCase } = require('title-case')
 
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
 
