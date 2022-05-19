@@ -4,6 +4,7 @@ const github = require('@actions/github')
 const YAML = require('yaml')
 const Jira = require('./common/net/Jira')
 const J2M = require('./lib/J2M')
+const titleCase = require('title-case')
 
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
 
@@ -32,9 +33,9 @@ async function getPreviousReleaseRef(octo) {
     return tag_name
 }
 
-function upperCaseFirst(str) {
-    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1))
-}
+// function upperCaseFirst(str) {
+//     return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1))
+// }
 
 module.exports = class {
     constructor({
@@ -159,13 +160,13 @@ module.exports = class {
                     }
 
                     if (issueKeys.length > 2) {
-                        newTitle = `${issueKeys.slice(0, 1).join(', ')} (+${issueKeys.length - 1}): ${upperCaseFirst(groupTitle)}`.slice(0, 71)
+                        newTitle = `${issueKeys.slice(0, 1).join(', ')} (+${issueKeys.length - 1}): ${titleCase(groupTitle)}`.slice(0, 71)
                     }
                     else {
-                        newTitle = `${issueKeys.join(', ')}: ${upperCaseFirst(groupTitle)}`.slice(0, 71)
+                        newTitle = `${issueKeys.join(', ')}: ${titleCase(groupTitle)}`.slice(0, 71)
                     }
                     
-                    core.setOutput('title', `${upperCaseFirst(groupTitle)}`)
+                    core.setOutput('title', `${titleCase(groupTitle)}`)
                 } catch (error) {
                     core.warning("catch 1 >>")
                     core.warning(error)
