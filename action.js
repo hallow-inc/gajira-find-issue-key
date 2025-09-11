@@ -160,10 +160,10 @@ module.exports = class {
                     }
 
                     if (issueKeys.length > 2) {
-                        newTitle = `${issueKeys.slice(0, 1).join(', ')} (+${issueKeys.length - 1}): ${titleCase(groupTitle)}`.slice(0, 71)
+                        newTitle = `${issueKeys.slice(0, 1).join(', ')} (+${issueKeys.length - 1}): ${titleCase(groupTitle)}`
                     }
                     else {
-                        newTitle = `${issueKeys.join(', ')}: ${titleCase(groupTitle)}`.slice(0, 71)
+                        newTitle = `${issueKeys.join(', ')}: ${titleCase(groupTitle)}`
                     }
                     
                     core.setOutput('title', `${titleCase(groupTitle)}`)
