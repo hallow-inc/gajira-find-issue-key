@@ -102,8 +102,12 @@ module.exports = class {
     }
 
     async updateStringByToken(startToken, endToken, fullText, insertText) {
+        // NOTE: `text` uses a lazy `[\s\S]+?` rather than `(?:.|\s)+`. The old
+        // pattern was two overlapping alternatives under `+` (every space/tab
+        // matches both `.` and `\s`), which caused catastrophic backtracking
+        // (ReDoS) on PR bodies when the end token was absent.
         const regex = new RegExp(
-            `(?<start>\\[\\/]: \\/ "${startToken}"\\n)(?<text>(?:.|\\s)+)(?<end>\\n\\[\\/]: \\/ "${endToken}"(?:\\s)?)`,
+            `(?<start>\\[\\/]: \\/ "${startToken}"\\n)(?<text>[\\s\\S]+?)(?<end>\\n\\[\\/]: \\/ "${endToken}"(?:\\s)?)`,
             'gm',
         )
 
