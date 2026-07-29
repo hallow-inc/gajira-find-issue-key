@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@actions/core": "^1.2.6",
+    "@actions/core": "^1.11.1",
     "@actions/github": "^4.0.0",
     "adf-builder": "^3.3.0",
     "lodash": "^4.17.21",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@atlassian-partner-engineering/eslint-config": "^3",
-    "@vercel/ncc": "^0.27.0",
+    "@vercel/ncc": "^0.38.4",
     "eslint": "^7.21.0",
     "eslint-plugin-github": "^4.1.2",
     "eslint-plugin-import": "^2.22.1",
