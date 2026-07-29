@@ -109,5 +109,5 @@ outputs:
   gist-name:
     description: The name of the Gist created
 runs:
-  using: 'node12'
+  using: 'node24'
   main: 'dist/index.js'
